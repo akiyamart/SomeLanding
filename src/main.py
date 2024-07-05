@@ -4,10 +4,6 @@ from fastapi.routing import APIRouter
 
 from src.api.handlers import user_router
 
-#####################
-# БЛОК С API ROUTES #
-#####################
-
 
 app = FastAPI(
     title = "Some Landing"

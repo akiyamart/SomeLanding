@@ -9,7 +9,7 @@ services:
       - POSTGRES_PASSWORD=${DB_PASS}
       - POSTGRES_DB=${DB_NAME}
     ports: 
-      "5432:5432"
+      - "5432:5432"
     networks:
       - custom 
   db_test: 
@@ -21,9 +21,9 @@ services:
       - POSTGRES_PASSWORD=${DB_PASS_TEST}
       - POSTGRES_DB=${DB_NAME_TEST}
     ports: 
-      "5433:5432"
+      - "5433:5432"
     networks:
       - custom 
 networks:
   custom: 
-    driver: bridge 
+    driver: bridge
