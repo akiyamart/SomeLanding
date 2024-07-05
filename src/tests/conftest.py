@@ -27,9 +27,7 @@ def event_loop():
 # Для запуска миграций (костыль: нужно заходить в папку миграций и настроить алембик)
 @pytest.fixture(scope="session", autouse=True)
 async def run_migrations(): 
-    os.system("alembic init migrations")
-    os.system('alembic revision --autogenerate -m "test migrations"')
-    os.system("alembic upgrade heads")
+    os.system("alembic upgrade head")
 
 @pytest.fixture(scope="session")
 async def async_session_test(): 
@@ -41,8 +39,8 @@ async def async_session_test():
 async def clean_tables(async_session_test):
     async with async_session_test() as session: 
         async with session.begin():
-           for table_for_clean in CLEAN_TABLES:
-             await session.execute(f"""TRUNCATE TABLE {table_for_clean};""") 
+            for table_for_clean in CLEAN_TABLES:
+                await session.execute(f"""TRUNCATE TABLE {table_for_clean} CASCADE;""") 
 
 # Тестовый клиент 
 @pytest.fixture(scope="function")
