@@ -12,6 +12,8 @@ class TunedModel(BaseModel):
         orm_mode = True
         """json-фицирует всё что входит в этот класс"""
 
+class DeletedUserResponse(BaseModel): 
+    delete_user_id: uuid.UUID
 class ShowUser(TunedModel): 
     user_id: uuid.UUID
     name: str 
