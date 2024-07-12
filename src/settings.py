@@ -12,3 +12,4 @@ TEST_DATABASE_URL = env.str(
     "TEST_DATABASE_URL", 
     default = f"postgresql+asyncpg://{DB_USER_TEST}:{DB_PASS_TEST}@{DB_HOST_TEST}:{DB_PORT_TEST}/{DB_NAME_TEST}"
 )
+ACCESS_TOKEN_EXPIRE_MINUTES: int = env.int("ACCESS_TOKEN_EXPIRE_MINUTES", default=30    )

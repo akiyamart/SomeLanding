@@ -2,8 +2,8 @@ from fastapi import FastAPI
 import uvicorn
 from fastapi.routing import APIRouter
 
-from src.api.handlers import user_router
-
+from src.api.handlers.users.user import user_router
+from src.api.handlers.auth.auth import login_router
 
 app = FastAPI(
     title = "Some Landing"
@@ -18,6 +18,11 @@ main_api_router.include_router(
     user_router, 
     prefix="/user", 
     tags=["user"]
+)
+main_api_router.include_router(
+    login_router, 
+    prefix="/login", 
+    tags=["login"]
 )
 # Включение главного роутера в app
 app.include_router(main_api_router)

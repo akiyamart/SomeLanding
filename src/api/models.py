@@ -7,6 +7,7 @@ from typing import Optional
 
 LETTER_MATCH_PATTERN = re.compile(r"^[a-zA-Zа-яА-Я\-]+$")
 
+# User
 class TunedModel(BaseModel): 
     class Config(ConfigDict): 
         """говорит pydantic конвертировать не только dict в json"""
@@ -66,3 +67,8 @@ class UpdatedUserRequest(BaseModel):
                 status_code=422, detail="Surname should contain only letters"
             )
         return value
+    
+# Login 
+class Token(BaseModel): 
+    access_token: str
+    token_type: str
