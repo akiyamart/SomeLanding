@@ -1,16 +1,16 @@
 import re 
 import uuid 
 from fastapi import HTTPException 
-from pydantic import BaseModel, EmailStr, field_validator, Field
+from pydantic import BaseModel, EmailStr, field_validator, Field, ConfigDict
 from typing import Optional
 
 
 LETTER_MATCH_PATTERN = re.compile(r"^[a-zA-Zа-яА-Я\-]+$")
 
 class TunedModel(BaseModel): 
-    class Config: 
+    class Config(ConfigDict): 
         """говорит pydantic конвертировать не только dict в json"""
-        orm_mode = True
+        from_attributes = True
         """json-фицирует всё что входит в этот класс"""
 
 class DeletedUserResponse(BaseModel): 
@@ -26,6 +26,7 @@ class UserCreate(BaseModel):
     name: str
     surname: str
     email: EmailStr
+    password: str
 
     @field_validator("name")
     def validate_name(cls, value): 
@@ -48,7 +49,7 @@ class UpdatedUserResponse(BaseModel):
 class UpdatedUserRequest(BaseModel): 
     name: Optional[str] = Field(None, min_length=1)
     surname: Optional[str] = Field(None, min_length=1)
-    email: Optional[EmailStr]
+    email: Optional[EmailStr] = Field(None, min_length=1) 
 
     @field_validator("name")
     def validate_name(cls, value): 
