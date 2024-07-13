@@ -42,7 +42,14 @@ class UserDAL:
             where(and_(User.user_id == user_id, User.is_active == True)). \
             values(kwargs). \
             returning(User.user_id)
-        res = await self.db_session.execute(query)
-        update_user_id_row = res.fetchone()
+        response = await self.db_session.execute(query)
+        update_user_id_row = response.fetchone()
         if update_user_id_row is not None:
             return update_user_id_row[0]
+        
+    async def get_user_by_email(self, email: str) -> Union[User, None]:
+        query = select(User).where(User.email == email)
+        response = await self.db_session.execute(query)
+        user_row = response.fetchone()
+        if user_row is not None: 
+            return user_row[0]

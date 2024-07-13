@@ -2,8 +2,8 @@ from fastapi import FastAPI
 import uvicorn
 from fastapi.routing import APIRouter
 
-from src.api.handlers.users.user import user_router
-from src.api.handlers.auth.auth import login_router
+from src.api.main_handlers import user_router
+from src.api.main_handlers import login_router
 
 app = FastAPI(
     title = "Some Landing"
