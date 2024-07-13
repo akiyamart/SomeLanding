@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 *.so
+src/settings.py
 
 # Virtual environments
 .venv
