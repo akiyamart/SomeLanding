@@ -4,9 +4,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 from datetime import timedelta
 from src.api.handlers.users.user import user_router, _create_new_user, _delete_user, _get_user_by_id, _update_user
-from src.api.handlers.auth.auth import login_router, authenticate_user, create_access_token
+from src.api.handlers.auth.auth import login_router, authenticate_user, create_access_token, get_current_user_from_token
 from src.api.models import UserCreate, DeletedUserResponse, ShowUser, UpdatedUserResponse, UpdatedUserRequest, Token
-from src.db.session import get_db 
+from src.db.session import get_db
+from src.db.models import User
 from src.settings import ACCESS_TOKEN_EXPIRE_MINUTES
 
 
@@ -63,3 +64,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
         data = {"sub": user.email, "other_custom_data": [1, 2, 3, 4]}, expires_delta=access_token_expires       
     )
     return {"access_token": access_token, "token_type": "bearer"}
+
+@login_router.get("/test_auth_endpoint")
+async def test_auth_endpoint(current_user: User = Depends(get_current_user_from_token)): 
+    return {"Success": True, "current_user": current_user}

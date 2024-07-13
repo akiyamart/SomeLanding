@@ -1,9 +1,12 @@
 from typing import Union, Optional
 from jose import jwt, JWTError
+from fastapi.security import OAuth2PasswordBearer
+from fastapi import status
 from datetime import datetime, timedelta
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter, Depends, HTTPException 
 from src.db.dals import UserDAL
+from src.db.session import get_db 
 from src.api.handlers.auth.hasher import Hasher
 from src.settings import ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM
 
@@ -23,6 +26,29 @@ async def authenticate_user(email: str, password: str, db: AsyncSession):
     if not Hasher.verify_password(password, user.hashed_password): 
         return 
     return user
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login/token")
+
+async def get_current_user_from_token(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)): 
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials"
+    )
+    try: 
+        payload = jwt.decode(
+            token=token, key=SECRET_KEY, algorithms=ALGORITHM
+        )
+        email: str = payload.get("sub")
+        print("username/email extracted is ", email)
+        if email is None: 
+            raise credentials_exception
+    except JWTError: 
+        raise credentials_exception
+    user = await _get_user_by_email_for_auth(email=email, session=db)
+    if user is None:
+        return None
+    return user
+
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None): 
     to_encode = data.copy()
