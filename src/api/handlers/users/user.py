@@ -5,7 +5,7 @@ from typing import Union
 from src.api.models import UserCreate, ShowUser
 from src.db.dals import UserDAL, PortalRole
 from src.api.handlers.auth.hasher import Hasher
-
+from src.db.models import User
 
 user_router = APIRouter()
 
@@ -56,4 +56,16 @@ async def _update_user(updated_user_params: dict, user_id: UUID, session) -> Uni
             **updated_user_params)
         return updated_user_id
 
-
+def check_user_permissions(target_user: User, current_user: User) -> bool: 
+    if target_user.user_id != current_user.user_id: 
+        if not {
+            PortalRole.ROLE_PORTAL_ADMIN,
+            PortalRole.ROLE_PORTAL_SUPERADMIN,
+        }.intersection(current_user.roles):
+            return False
+    if (
+        PortalRole.ROLE_PORTAL_SUPERADMIN in target_user.roles 
+        and PortalRole.ROLE_PORTAL_ADMIN in current_user.roles 
+    ):
+        return False
+    return True
