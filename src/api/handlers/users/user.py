@@ -35,18 +35,12 @@ async def _delete_user(user_id, session) -> Union[UUID, None]:
         )
         return deleted_user_id
 
-async def _get_user_by_id(user_id, session) -> Union[ShowUser, None]: 
+async def _get_user_by_id(user_id, session) -> Union[User, None]: 
     async with session.begin(): 
         user_dal = UserDAL(session)
         user = await user_dal.get_user_by_id(user_id=user_id)
         if user is not None: 
-            return ShowUser(
-                user_id=user.user_id,
-                name=user.name,
-                surname=user.surname,
-                email=user.email,
-                is_active=user.is_active 
-            )
+            return user
             
 async def _update_user(updated_user_params: dict, user_id: UUID, session) -> Union[UUID, None]:
     async with session.begin(): 
@@ -68,4 +62,6 @@ def check_user_permissions(target_user: User, current_user: User) -> bool:
         and PortalRole.ROLE_PORTAL_ADMIN in current_user.roles 
     ):
         return False
+    if PortalRole.ROLE_PORTAL_ADMIN in target_user.roles and PortalRole.ROLE_PORTAL_ADMIN in current_user.roles:
+        return False 
     return True
