@@ -11,6 +11,7 @@ from src.api.handlers.auth.hasher import Hasher
 from src.settings import ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM
 
 login_router = APIRouter()
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login/token")
 
 async def _get_user_by_email_for_auth(email: str, session: AsyncSession):
     async with session.begin():
@@ -26,8 +27,6 @@ async def authenticate_user(email: str, password: str, db: AsyncSession):
     if not Hasher.verify_password(password, user.hashed_password): 
         return 
     return user
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login/token")
 
 async def get_current_user_from_token(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)): 
     credentials_exception = HTTPException(
