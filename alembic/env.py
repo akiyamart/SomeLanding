@@ -5,6 +5,7 @@ from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 from src.config import DB_HOST, DB_PORT, DB_USER, DB_NAME, DB_PASS
+from src.config import DB_HOST_TEST, DB_PORT_TEST, DB_USER_TEST, DB_NAME_TEST, DB_PASS_TEST
 from alembic import context
 
 # this is the Alembic Config object, which provides
@@ -17,6 +18,12 @@ config.set_section_option(section, "DB_PORT", DB_PORT)
 config.set_section_option(section, "DB_USER", DB_USER)
 config.set_section_option(section, "DB_NAME", DB_NAME)
 config.set_section_option(section, "DB_PASS", DB_PASS)
+
+config.set_section_option(section, "DB_HOST_TEST", DB_HOST_TEST)
+config.set_section_option(section, "DB_PORT_TEST", DB_PORT_TEST)
+config.set_section_option(section, "DB_USER_TEST", DB_USER_TEST)
+config.set_section_option(section, "DB_NAME_TEST", DB_NAME_TEST)
+config.set_section_option(section, "DB_PASS_TEST", DB_PASS_TEST)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.

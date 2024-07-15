@@ -3,7 +3,7 @@ from uuid import UUID
 from fastapi import APIRouter
 from typing import Union
 from src.api.models import UserCreate, ShowUser
-from src.db.dals import UserDAL
+from src.db.dals import UserDAL, PortalRole
 from src.api.handlers.auth.hasher import Hasher
 
 
@@ -16,7 +16,8 @@ async def _create_new_user(body: UserCreate, session) -> ShowUser:
             name = body.name,
             surname = body.surname,
             email = body.email,
-            hashed_password = Hasher.get_password_hash(body.password)
+            hashed_password = Hasher.get_password_hash(body.password),
+            roles = [PortalRole.ROLE_PORTAL_USER, ]
         )
         return ShowUser(
             user_id = user.user_id,
