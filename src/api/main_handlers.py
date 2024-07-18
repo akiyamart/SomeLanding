@@ -70,19 +70,19 @@ async def update_user(
             logger.error(err)
 ### Roles ###
 
-@user_router.patch("/admin_privilage", response_model=UpdatedUserResponse)
+@user_router.patch("/admin_privilege", response_model=UpdatedUserResponse)
 async def give_admin_privilege(
     user_id: UUID, 
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_from_token),
 ) -> UpdatedUserResponse:  
+    if current_user.user_id == user_id: 
+        raise HTTPException(status_code=400, detail=f"Cannot manage privilege to itself")
     if not current_user.is_superadmin: 
         raise HTTPException(status_code=403, detail="Forbidden")
     user_for_promotion = await _get_user_by_id(user_id, db)
     if user_for_promotion.is_admin or user_for_promotion.is_superadmin: 
         raise HTTPException(status_code=409, detail=f"User with id {current_user.user_id} already promoted to admin / superadmin")
-    if current_user.user_id == user_for_promotion.user_id: 
-        raise HTTPException(status_code=400, detail=f"Cannot manage privilage to itself")
     if user_for_promotion is None: 
         raise HTTPException(status_code=404, detail=f"User not found")
     updated_user_params = {
@@ -91,6 +91,34 @@ async def give_admin_privilege(
     try: 
         updated_user_id = await _update_user(
             updated_user_params=updated_user_params, user_id=user_for_promotion.user_id, session=db
+        )
+    except IntegrityError as err: 
+        logger.error(err)
+        raise HTTPException(status_code=503, detail=f"Database error: {err}")
+    return UpdatedUserResponse(updated_user_id=updated_user_id)
+
+
+@user_router.delete("/admin_privilege", response_model=UpdatedUserResponse)
+async def revoke_admin_privilege(
+    user_id: UUID, 
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_token),
+) -> UpdatedUserResponse:  
+    if current_user.user_id == user_id: 
+        raise HTTPException(status_code=400, detail=f"Cannot manage privilege to itself")
+    if not current_user.is_superadmin: 
+        raise HTTPException(status_code=403, detail="Forbidden")
+    user_for_revoke = await _get_user_by_id(user_id, db)
+    if not user_for_revoke.is_admin: 
+        raise HTTPException(status_code=409, detail=f"User with id {current_user.user_id} has no admin rights")
+    if user_for_revoke is None: 
+        raise HTTPException(status_code=404, detail=f"User not found")
+    updated_user_params = {
+        "roles": user_for_revoke.revoke_admin_privileges()
+    }
+    try: 
+        updated_user_id = await _update_user(
+            updated_user_params=updated_user_params, user_id=user_for_revoke.user_id, session=db
         )
     except IntegrityError as err: 
         logger.error(err)

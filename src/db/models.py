@@ -31,4 +31,8 @@ class User(Base):
     
     def add_admin_privileges(self): 
         if not self.is_admin: 
-            return {self.roles, PortalRole.ROLE_PORTAL_ADMIN}
+            return {*self.roles, PortalRole.ROLE_PORTAL_ADMIN}
+        
+    def revoke_admin_privileges(self): 
+        if self.is_admin: 
+            return {role for role in self.roles if role != PortalRole.ROLE_PORTAL_ADMIN}
