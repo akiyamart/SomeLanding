@@ -1,10 +1,12 @@
 
 from uuid import UUID
 from fastapi import APIRouter
+from fastapi.exceptions import HTTPException
 from typing import Union
 from src.api.models import UserCreate, ShowUser
-from src.db.dals import UserDAL, PortalRole
+from src.db.dals import UserDAL
 from src.api.handlers.auth.hasher import Hasher
+from src.db.models import PortalRole
 from src.db.models import User
 
 user_router = APIRouter()
@@ -51,6 +53,8 @@ async def _update_user(updated_user_params: dict, user_id: UUID, session) -> Uni
         return updated_user_id
 
 def check_user_permissions(target_user: User, current_user: User) -> bool: 
+    if PortalRole.ROLE_PORTAL_SUPERADMIN in current_user.roles:
+        raise HTTPException(status_code=406, detail="Superadmin cannot be deleted with via API")
     if target_user.user_id != current_user.user_id: 
         if not {
             PortalRole.ROLE_PORTAL_ADMIN,

@@ -68,7 +68,36 @@ async def update_user(
             return UpdatedUserResponse(updated_user_id=updated_user_id)
         except IntegrityError as err: 
             logger.error(err)
-# Login
+### Roles ###
+
+@user_router.patch("/admin_privilage", response_model=UpdatedUserResponse)
+async def give_admin_privilege(
+    user_id: UUID, 
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_token),
+) -> UpdatedUserResponse:  
+    if not current_user.is_superadmin: 
+        raise HTTPException(status_code=403, detail="Forbidden")
+    user_for_promotion = await _get_user_by_id(user_id, db)
+    if user_for_promotion.is_admin or user_for_promotion.is_superadmin: 
+        raise HTTPException(status_code=409, detail=f"User with id {current_user.user_id} already promoted to admin / superadmin")
+    if current_user.user_id == user_for_promotion.user_id: 
+        raise HTTPException(status_code=400, detail=f"Cannot manage privilage to itself")
+    if user_for_promotion is None: 
+        raise HTTPException(status_code=404, detail=f"User not found")
+    updated_user_params = {
+        "roles": user_for_promotion.add_admin_privileges()
+    }
+    try: 
+        updated_user_id = await _update_user(
+            updated_user_params=updated_user_params, user_id=user_for_promotion.user_id, session=db
+        )
+    except IntegrityError as err: 
+        logger.error(err)
+        raise HTTPException(status_code=503, detail=f"Database error: {err}")
+    return UpdatedUserResponse(updated_user_id=updated_user_id)
+
+### Login ###
 @login_router.post('/token', response_model=Token)
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
     user = await authenticate_user(form_data.username, form_data.password, db)
@@ -82,3 +111,4 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
         data = {"sub": user.email, "other_custom_data": [1, 2, 3, 4]}, expires_delta=access_token_expires       
     )
     return {"access_token": access_token, "token_type": "bearer"}
+
